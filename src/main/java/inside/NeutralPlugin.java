@@ -13,6 +13,7 @@ import inside.entry.*;
 import inside.struct.*;
 import inside.vote.*;
 import mindustry.content.*;
+import mindustry.core.NetClient;
 import mindustry.game.EventType.*;
 import mindustry.game.Team;
 import mindustry.gen.*;
@@ -47,6 +48,8 @@ public class NeutralPlugin extends Plugin{
     private final ObjectSet<String> votes = new ObjectSet<>();                //
     private final ObjectSet<String> alertIgnores = new ObjectSet<>();         // TODO(Skat): combine this
     private final ObjectSet<String> activeHistoryPlayers = new ObjectSet<>(); //
+    private final ObjectSet<String> spies = new ObjectSet<>();
+    private final Seq<Tuple3<Player, Player, Long>> send = new Seq<>();
     private final Interval interval = new Interval();
 
     private CacheSeq<HistoryEntry>[][] history;
@@ -99,6 +102,11 @@ public class NeutralPlugin extends Plugin{
                 return null;
             }
             return text;
+        });
+
+        Events.run(Trigger.update, () -> {
+
+            send.each(m -> Time.timeSinceMillis(m.t3) > config.messageRedirectTime, send::remove);
         });
 
         // history
@@ -269,6 +277,91 @@ public class NeutralPlugin extends Plugin{
 
     @Override
     public void registerClientCommands(CommandHandler handler){
+
+        handler.removeCommand("t");
+
+        handler.<Player>register("t", "<message...>", "Send a message only to your teammates.", (args, player) -> {
+            String message = netServer.admins.filterMessage(player, args[0]);
+            if(message != null){
+                Groups.player.each(p -> p.team() == player.team() || spies.contains(p.uuid()), o -> o.sendMessage(message, player, "[#" + player.team().color.toString() + "]<T>" + NetClient.colorizeName(player.id(), player.name)));
+            }
+        });
+
+        handler.<Player>register("l", "<range> <message...>", "Send a message in the range.", (args, player) -> {
+            if(!Strings.canParseInt(args[0])){
+                player.sendMessage("[scarlet]'range' must be a number.");
+                return;
+            }
+
+            String message = netServer.admins.filterMessage(player, args[1]);
+            int range = Strings.parseInt(args[0]) * 10;
+            if(message != null){
+                Groups.player.each(p -> p.dst(player.x, player.y) < range || spies.contains(p.uuid()), o -> o.sendMessage(message, player, "[#" + player.team().color.toString() + "]<L>" + NetClient.colorizeName(player.id(), player.name)));
+            }
+        });
+
+        handler.<Player>register("spy", "Admins command for chat listen.", (args, player) -> {
+            if(!player.admin){
+                player.sendMessage("[scarlet]You must be admin to use this command.");
+                return;
+            }
+
+            if(spies.contains(player.uuid())){
+                spies.remove(player.uuid());
+                player.sendMessage("[lightgray]Listening mode [orange]disabled[].");
+            }else{
+                spies.add(player.uuid());
+                player.sendMessage("[lightgray]Listening mode [orange]enabled[].");
+            }
+        });
+
+        handler.<Player>register("vanish", "Change the command to neutral.", (args, player) -> {
+            if(!player.admin){
+                player.sendMessage("[scarlet]You must be admin to use this command.");
+                return;
+            }
+
+            player.clearUnit();
+            player.team(player.team() == state.rules.defaultTeam ? Team.derelict : state.rules.defaultTeam);
+        });
+
+        handler.<Player>register("m", "<id> <text...>", "Send direct message.", (args, player) -> {
+            if(!Strings.canParseInt(args[0])){
+                player.sendMessage("[scarlet]Id must be number.");
+                return;
+            }
+
+            int id = Strings.parseInt(args[0]);
+            Player target = Groups.player.find(p -> p.id == id);
+            if(target == null){
+                player.sendMessage("[scarlet]Player not found.");
+                return;
+            }
+
+            if(send.contains(t -> t.t2 == target)){
+                player.sendMessage("[scarlet]Please wait! Player is busy.");
+                return;
+            }
+
+            send.add(Tuples.of(player, target, Time.millis()));
+
+            target.sendMessage(Strings.format("[lightgray][[@ --> [orange]You[lightgray]]:[white] @", NetClient.colorizeName(player.id, player.name), args[1]));
+            player.sendMessage(Strings.format("[lightgray][[[orange]You[lightgray] --> @]:[white] @", NetClient.colorizeName(target.id, target.name), args[1]));
+        });
+
+        handler.<Player>register("r", "<text...>", "Reply direct message.", (args, player) -> {
+            Tuple3<Player, Player, Long> message = send.find(m -> m.t2 == player);
+            if(message == null){
+                player.sendMessage("[scarlet]No one to answer.");
+                return;
+            }
+            Player target = message.t1;
+
+            send.add(Tuples.of(player, target, Time.millis()));
+
+            target.sendMessage(Strings.format("[lightgray][[@ --> [orange]You[lightgray]]:[white] @", NetClient.colorizeName(player.id, player.name), args[0]));
+            player.sendMessage(Strings.format("[lightgray][[[orange]You[lightgray] --> @]:[white] @", NetClient.colorizeName(target.id, target.name), args[0]));
+        });
 
         handler.<Player>register("alert", bundle.get("commands.alert.description"), (args, player) -> {
             if(alertIgnores.contains(player.uuid())){

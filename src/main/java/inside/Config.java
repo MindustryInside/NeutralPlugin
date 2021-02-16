@@ -15,6 +15,9 @@ public class Config{
     /** History entry TTL. Default 30 minutes. In milliseconds. */
     public long expireDelay = 1800000;
 
+    /** Response timeout. In milliseconds. Default 10 seconds. */
+    public long messageRedirectTime = 10000;
+
     /** Vote duration. In seconds. */
     public float voteDuration = 75f;
 

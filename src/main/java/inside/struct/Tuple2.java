@@ -16,10 +16,6 @@ public class Tuple2<T1, T2> implements Iterable<Object>, Serializable{
         this.t2 = Objects.requireNonNull(t2, "t2");
     }
 
-    public static <T1, T2> Tuple2<T1, T2> of(T1 t1, T2 t2){
-        return new Tuple2<>(t1, t2);
-    }
-
     public <R> Tuple2<R, T2> mapT1(Function<T1, R> mapper){
         return new Tuple2<>(mapper.apply(t1), t2);
     }

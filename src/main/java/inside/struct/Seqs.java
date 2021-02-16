@@ -7,7 +7,7 @@ import arc.util.*;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import static pandorum.struct.CacheSeq.UNSET_INT;
+import static inside.struct.CacheSeq.UNSET_INT;
 
 public abstract class Seqs{
 
