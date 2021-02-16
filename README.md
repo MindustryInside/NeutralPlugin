@@ -1,4 +1,4 @@
-# Plugin name
+# Neutral Plugin
 
 
 ## Building a Jar
