@@ -5,7 +5,6 @@ import arc.struct.Queue;
 import arc.util.*;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import static inside.struct.CacheSeq.UNSET_INT;

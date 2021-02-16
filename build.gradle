@@ -20,14 +20,6 @@ dependencies{
     implementation "com.google.code.gson:gson:$gsonVersion"
 }
 
-allprojects{
-    tasks.withType(JavaCompile){
-        if(JavaVersion.current() != JavaVersion.VERSION_1_8){
-            options.compilerArgs += ['--release', '8']
-        }
-    }
-}
-
 jar{
     archiveFileName = "${project.archivesBaseName}.jar"
     from{configurations.runtimeClasspath.collect{it.isDirectory() ? it : zipTree(it)}}
