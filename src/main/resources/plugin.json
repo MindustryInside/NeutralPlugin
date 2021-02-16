@@ -1,7 +1,7 @@
 {
-  "name": "",
-  "author": "",
-  "main": "",
+  "name": "NeutralPlugin",
+  "author": "Mindustry Inside",
+  "main": "inside.NeutralPlugin",
   "description": "",
-  "version": ""
+  "version": "0.1"
 }
