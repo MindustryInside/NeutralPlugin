@@ -5,7 +5,7 @@ import mindustry.world.Block;
 
 import java.util.concurrent.TimeUnit;
 
-import static pandorum.PandorumPlugin.bundle;
+import static inside.NeutralPlugin.bundle;
 
 public class RotateEntry implements HistoryEntry{
     protected static final String[] sides;

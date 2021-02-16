@@ -4,11 +4,11 @@ import arc.util.*;
 import mindustry.game.EventType.BlockBuildEndEvent;
 import mindustry.gen.*;
 import mindustry.world.Block;
-import pandorum.Misc;
+import inside.Misc;
 
 import java.util.concurrent.TimeUnit;
 
-import static pandorum.PandorumPlugin.bundle;
+import static inside.NeutralPlugin.bundle;
 
 public class BlockEntry implements HistoryEntry{
     public final long lastAccessTime = Time.millis();

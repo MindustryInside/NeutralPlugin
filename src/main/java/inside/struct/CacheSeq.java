@@ -25,7 +25,7 @@ public class CacheSeq<T> extends Seq<T>{
         }
 
         super.add(e);
-        writeQueue.add(Tuple2.of(e, Time.nanos()));
+        writeQueue.add(Tuples.of(e, Time.nanos()));
 
         cleanUpBySize();
         cleanUp();

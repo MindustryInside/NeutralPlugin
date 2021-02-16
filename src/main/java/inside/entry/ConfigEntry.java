@@ -8,12 +8,12 @@ import mindustry.game.EventType.ConfigEvent;
 import mindustry.gen.Groups;
 import mindustry.type.*;
 import mindustry.world.*;
-import pandorum.Misc;
+import inside.Misc;
 
 import java.util.concurrent.TimeUnit;
 
 import static mindustry.Vars.world;
-import static pandorum.PandorumPlugin.bundle;
+import static inside.NeutralPlugin.bundle;
 
 public class ConfigEntry implements HistoryEntry{
     private static final StringMap icons = StringMap.of(
