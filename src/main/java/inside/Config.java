@@ -32,7 +32,7 @@ public class Config{
     public PluginType type = PluginType.def;
 
     /** Plugin locale. */
-    public String locale = "ru";
+    public Locale locale = Locale.forLanguageTag("ru");
 
     public Set<String> bannedNames = Set.of(
             "IGGGAMES",

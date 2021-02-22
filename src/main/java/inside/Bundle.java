@@ -12,14 +12,14 @@ public class Bundle{
             return ResourceBundle.getBundle("bundles.bundle", locale).getString(key);
         }catch(Throwable t){
             if(t instanceof MissingResourceException){
-                return get(key, Locale.forLanguageTag(config.locale));
+                return get(key, config.locale);
             }
             return "???" + key + "???";
         }
     }
 
     public String get(String key){
-        return get(key, Locale.forLanguageTag(config.locale));
+        return get(key, config.locale);
     }
 
     public String format(String key, Locale locale, Object... values){
@@ -27,6 +27,6 @@ public class Bundle{
     }
 
     public String format(String key, Object... values){
-        return format(key, Locale.forLanguageTag(config.locale), values);
+        return format(key, config.locale, values);
     }
 }
