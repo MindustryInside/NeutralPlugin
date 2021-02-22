@@ -6,6 +6,7 @@ import mindustry.gen.*;
 import mindustry.world.Block;
 import inside.Misc;
 
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import static inside.NeutralPlugin.bundle;
@@ -29,16 +30,16 @@ public class BlockEntry implements HistoryEntry{
     }
 
     @Override
-    public String getMessage(){
+    public String getMessage(Locale locale){
         if(breaking){
-            return name != null ? bundle.format("events.history.block.destroy.player", name) :
-            bundle.format("events.history.block.destroy.unit", unit.type);
+            return name != null ? bundle.format("events.history.block.destroy.player", locale, name) :
+            bundle.format("events.history.block.destroy.unit", locale, unit.type);
         }
 
-        String base = name != null ? bundle.format("events.history.block.construct.player", name, block) :
-                      bundle.format("events.history.block.construct.unit", unit.type, block);
+        String base = name != null ? bundle.format("events.history.block.construct.player", locale, name, block) :
+                      bundle.format("events.history.block.construct.unit", locale, unit.type, block);
         if(block.rotate){
-            base += bundle.format("events.history.block.construct.rotate", RotateEntry.sides[rotation]);
+            base += bundle.format("events.history.block.construct.rotate", locale, RotateEntry.sides[rotation]);
         }
         return base;
     }

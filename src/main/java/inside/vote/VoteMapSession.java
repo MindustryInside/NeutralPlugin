@@ -23,7 +23,7 @@ public class VoteMapSession extends VoteSession{
     protected Task start(){
         return Timer.schedule(() -> {
             if(!checkPass()){
-                Call.sendMessage(bundle.format("commands.nominate.map.failed", target.name()));
+                bundled("commands.nominate.map.failed", target.name());
                 voted.clear();
                 map[0] = null;
                 task.cancel();
@@ -35,14 +35,14 @@ public class VoteMapSession extends VoteSession{
     public void vote(Player player, int d){
         votes += d;
         voted.addAll(player.uuid(), netServer.admins.getInfo(player.uuid()).lastIP);
-        Call.sendMessage(bundle.format("commands.nominate.map.vote", player.name, target.name(), votes, votesRequired()));
+        bundled("commands.nominate.map.vote", player.name, target.name(), votes, votesRequired());
         checkPass();
     }
 
     @Override
     protected boolean checkPass(){
         if(votes >= votesRequired()){
-            Call.sendMessage(bundle.format("commands.nominate.map.passed", target.name()));
+            bundled("commands.nominate.map.passed", target.name());
             map[0] = null;
             task.cancel();
 

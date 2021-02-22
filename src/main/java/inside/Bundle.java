@@ -7,21 +7,26 @@ import static inside.NeutralPlugin.config;
 
 public class Bundle{
 
-    private final ResourceBundle bundle;
-
-    public Bundle(){
-        bundle = ResourceBundle.getBundle("bundle", new Locale(config.locale));
-    }
-
-    public String get(String key){
+    public String get(String key, Locale locale){
         try{
-            return bundle.getString(key);
+            return ResourceBundle.getBundle("bundles.bundle", locale).getString(key);
         }catch(Throwable t){
+            if(t instanceof MissingResourceException){
+                return get(key, Locale.forLanguageTag(config.locale));
+            }
             return "???" + key + "???";
         }
     }
 
+    public String get(String key){
+        return get(key, Locale.forLanguageTag(config.locale));
+    }
+
+    public String format(String key, Locale locale, Object... values){
+        return MessageFormat.format(get(key, locale), values);
+    }
+
     public String format(String key, Object... values){
-        return MessageFormat.format(get(key), values);
+        return format(key, Locale.forLanguageTag(config.locale), values);
     }
 }

@@ -8,9 +8,9 @@ import mindustry.game.Team;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
 
-import java.util.Objects;
+import java.util.*;
 
-import static inside.NeutralPlugin.bundle;
+import static inside.NeutralPlugin.*;
 import static mindustry.Vars.*;
 
 public abstract class Misc{

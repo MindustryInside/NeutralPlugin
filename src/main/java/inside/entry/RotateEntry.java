@@ -3,6 +3,7 @@ package inside.entry;
 import arc.util.Time;
 import mindustry.world.Block;
 
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import static inside.NeutralPlugin.bundle;
@@ -26,8 +27,8 @@ public class RotateEntry implements HistoryEntry{
     }
 
     @Override
-    public String getMessage(){
-        return bundle.format("events.history.rotate", name, block.name, sides[rotation]);
+    public String getMessage(Locale locale){
+        return bundle.format("events.history.rotate", locale, name, block.name, sides[rotation]);
     }
 
     @Override

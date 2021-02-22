@@ -21,7 +21,7 @@ public class VoteSaveSession extends VoteSession{
     protected Task start(){
         return Timer.schedule(() -> {
             if(!checkPass()){
-                Call.sendMessage(bundle.format("commands.nominate.save.failed", target));
+                Groups.player.each(p -> bundled(p, "commands.nominate.save.failed", target));
                 voted.clear();
                 map[0] = null;
                 task.cancel();
@@ -33,14 +33,14 @@ public class VoteSaveSession extends VoteSession{
     public void vote(Player player, int d){
         votes += d;
         voted.addAll(player.uuid(), netServer.admins.getInfo(player.uuid()).lastIP);
-        Call.sendMessage(bundle.format("commands.nominate.save.vote", player.name, target, votes, votesRequired()));
+        Groups.player.each(p -> bundled(p, "commands.nominate.save.vote", player.name, target, votes, votesRequired()));
         checkPass();
     }
 
     @Override
     protected boolean checkPass(){
         if(votes >= votesRequired()){
-            Call.sendMessage(bundle.format("commands.nominate.save.passed", target));
+            Groups.player.each(p -> bundled(p, "commands.nominate.save.passed", target));
             SaveIO.save(saveDirectory.child(String.format("%s.%s", target, saveExtension)));
             map[0] = null;
             task.cancel();

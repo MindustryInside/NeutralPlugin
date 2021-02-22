@@ -160,23 +160,24 @@ public class NeutralPlugin extends Plugin{
             if(activeHistoryPlayers.contains(event.player.uuid())){
                 CacheSeq<HistoryEntry> entries = history[event.tile.x][event.tile.y];
 
-                StringBuilder message = new StringBuilder(bundle.format("events.history.title", event.tile.x, event.tile.y));
+                Locale locale = Locale.forLanguageTag(event.player.locale);
+                StringBuilder message = new StringBuilder(bundle.format("events.history.title", locale, event.tile.x, event.tile.y));
 
                 entries.cleanUp();
                 if(entries.isOverflown()){
-                    message.append(bundle.get("events.history.overflow"));
+                    message.append(bundle.get("events.history.overflow", locale));
                 }
 
                 int i = 0;
                 for(HistoryEntry entry : entries){
-                    message.append("\n").append(entry.getMessage());
+                    message.append("\n").append(entry.getMessage(locale));
                     if(++i > 6){
                         break;
                     }
                 }
 
                 if(entries.isEmpty()){
-                    message.append(bundle.get("events.history.empty"));
+                    message.append(bundle.get("events.history.empty", locale));
                 }
 
                 event.player.sendMessage(message.toString());
@@ -187,12 +188,13 @@ public class NeutralPlugin extends Plugin{
 
         //
 
+        //TODO(Skat): localize this
         Events.on(PlayerJoin.class, event -> forbiddenIps.each(i -> i.matchIp(event.player.con.address), i -> event.player.con.kick(bundle.get("events.vpn-ip"))));
 
         Events.on(PlayerConnect.class, event -> {
             Player player = event.player;
             if(config.bannedNames.contains(player.name())){
-                player.con.kick(bundle.get("events.unofficial-mindustry"), 60000);
+                player.con.kick(bundle.get("events.unofficial-mindustry", Locale.forLanguageTag(player.locale)), 60000);
             }
         });
 
@@ -200,7 +202,10 @@ public class NeutralPlugin extends Plugin{
             Building building = event.tile;
             Player target = event.player;
             if(building.block() == Blocks.thoriumReactor && event.item == Items.thorium && target.team().cores().contains(c -> event.tile.dst(c.x, c.y) < config.alertDistance)){
-                Groups.player.each(p -> !alertIgnores.contains(p.uuid()), p -> p.sendMessage(bundle.format("events.withdraw-thorium", Misc.colorizedName(target), building.tileX(), building.tileY())));
+                Groups.player.each(p -> !alertIgnores.contains(p.uuid()), p -> p.sendMessage(bundle.format("events.withdraw-thorium",
+                                                                                                           Locale.forLanguageTag(p.locale),
+                                                                                                           Misc.colorizedName(target),
+                                                                                                           building.tileX(), building.tileY())));
             }
         });
 
@@ -211,7 +216,10 @@ public class NeutralPlugin extends Plugin{
                 Player target = event.builder.getPlayer();
 
                 if(interval.get(300)){
-                    Groups.player.each(p -> !alertIgnores.contains(p.uuid()), p -> p.sendMessage(bundle.format("events.alert", target.name, event.tile.x, event.tile.y)));
+                    Groups.player.each(p -> !alertIgnores.contains(p.uuid()), p -> p.sendMessage(bundle.format("events.alert",
+                                                                                                               Locale.forLanguageTag(p.locale),
+                                                                                                               target.name,
+                                                                                                               event.tile.x, event.tile.y)));
                 }
             }
         });
@@ -221,7 +229,7 @@ public class NeutralPlugin extends Plugin{
             int req = (int)Math.ceil(config.voteRatio * Groups.player.size());
             if(votes.contains(event.player.uuid())){
                 votes.remove(event.player.uuid());
-                Call.sendMessage(bundle.format("commands.rtv.left", Misc.colorizedName(event.player), cur - 1, req));
+                bundled("commands.rtv.left", Misc.colorizedName(event.player), cur - 1, req);
             }
         });
 
@@ -280,6 +288,7 @@ public class NeutralPlugin extends Plugin{
 
         handler.removeCommand("t");
 
+        //TODO(Skat): localize this
         handler.<Player>register("t", "<message...>", "Send a message only to your teammates.", (args, player) -> {
             String message = netServer.admins.filterMessage(player, args[0]);
             if(message != null){
@@ -287,6 +296,7 @@ public class NeutralPlugin extends Plugin{
             }
         });
 
+        //TODO(Skat): localize this
         handler.<Player>register("l", "<range> <message...>", "Send a message in the range.", (args, player) -> {
             if(!Strings.canParseInt(args[0])){
                 player.sendMessage("[scarlet]'range' must be a number.");
@@ -300,6 +310,7 @@ public class NeutralPlugin extends Plugin{
             }
         });
 
+        //TODO(Skat): localize this
         handler.<Player>register("spy", "Admins command for chat listen.", (args, player) -> {
             if(!player.admin){
                 player.sendMessage("[scarlet]You must be admin to use this command.");
@@ -315,16 +326,7 @@ public class NeutralPlugin extends Plugin{
             }
         });
 
-        handler.<Player>register("vanish", "Change the command to neutral.", (args, player) -> {
-            if(!player.admin){
-                player.sendMessage("[scarlet]You must be admin to use this command.");
-                return;
-            }
-
-            player.clearUnit();
-            player.team(player.team() == state.rules.defaultTeam ? Team.derelict : state.rules.defaultTeam);
-        });
-
+        //TODO(Skat): localize this
         handler.<Player>register("m", "<id> <text...>", "Send direct message.", (args, player) -> {
             if(!Strings.canParseInt(args[0])){
                 player.sendMessage("[scarlet]Id must be number.");
@@ -349,6 +351,7 @@ public class NeutralPlugin extends Plugin{
             player.sendMessage(Strings.format("[lightgray][[[orange]You[lightgray] --> @]:[white] @", NetClient.colorizeName(target.id, target.name), args[1]));
         });
 
+        //TODO(Skat): localize this
         handler.<Player>register("r", "<text...>", "Reply direct message.", (args, player) -> {
             Tuple3<Player, Player, Long> message = send.find(m -> m.t2 == player);
             if(message == null){
@@ -375,6 +378,7 @@ public class NeutralPlugin extends Plugin{
 
         handler.<Player>register("history", bundle.get("commands.history.params"), bundle.get("commands.history.description"), (args, player) -> {
             String uuid = player.uuid();
+            Locale locale = Locale.forLanguageTag(player.locale);
             if(args.length > 0 && activeHistoryPlayers.contains(uuid)){
                 if(!Strings.canParseInt(args[0]) && !Misc.bool(args[0])){
                     bundled(player, "commands.page-not-int");
@@ -396,17 +400,17 @@ public class NeutralPlugin extends Plugin{
                 }
 
                 StringBuilder result = new StringBuilder();
-                result.append(bundle.format("commands.history.page", mouseX, mouseY, page + 1, pages)).append("\n");
+                result.append(bundle.format("commands.history.page", locale, mouseX, mouseY, page + 1, pages)).append("\n");
                 if(entries.isEmpty()){
-                    result.append("events.history.empty");
+                    result.append(bundle.get("events.history.empty", locale));
                 }
 
                 for(int i = 6 * page; i < Math.min(6 * (page + 1), entries.size); i++){
                     HistoryEntry entry = entries.get(i);
 
-                    result.append(entry.getMessage());
+                    result.append(entry.getMessage(locale));
                     if(forward){
-                        result.append(bundle.format("events.history.last-access-time", entry.getLastAccessTime(TimeUnit.SECONDS)));
+                        result.append(bundle.format("events.history.last-access-time", locale, entry.getLastAccessTime(TimeUnit.SECONDS)));
                     }
 
                     result.append("\n");
@@ -435,16 +439,14 @@ public class NeutralPlugin extends Plugin{
                 uuids.add(uuid);
                 int cur = uuids.size;
                 int req = (int)Math.ceil(config.voteRatio * Groups.player.count(p -> p.team() == team));
-                Call.sendMessage(bundle.format("commands.surrender.ok",
-                                               Misc.colorizedTeam(team),
-                                               Misc.colorizedName(player), cur, req));
+                bundled("commands.surrender.ok", Misc.colorizedTeam(team), Misc.colorizedName(player), cur, req);
 
                 if(cur < req){
                     return;
                 }
 
                 surrendered.remove(team);
-                Call.sendMessage(bundle.format("commands.surrender.successful", Misc.colorizedTeam(team)));
+                bundled("commands.surrender.successful", Misc.colorizedTeam(team));
                 Groups.unit.each(u -> u.team == team, u -> Time.run(Mathf.random(360), u::kill));
                 for(Tile tile : world.tiles){
                     if(tile.build != null && tile.team() == team){
@@ -469,7 +471,7 @@ public class NeutralPlugin extends Plugin{
             }
 
             StringBuilder result = new StringBuilder();
-            result.append(bundle.format("commands.pl.page", page + 1, pages)).append("\n");
+            result.append(bundle.format("commands.pl.page", Locale.forLanguageTag(player.locale), page + 1, pages)).append("\n");
 
             for(int i = 6 * page; i < Math.min(6 * (page + 1), Groups.player.size()); i++){
                 Player t = Groups.player.index(i);
@@ -492,13 +494,13 @@ public class NeutralPlugin extends Plugin{
             votes.add(player.uuid());
             int cur = votes.size;
             int req = (int)Math.ceil(config.voteRatio * Groups.player.size());
-            Call.sendMessage(bundle.format("commands.rtv.ok", Misc.colorizedName(player), cur, req));
+            bundled("commands.rtv.ok", Misc.colorizedName(player), cur, req);
 
             if(cur < req){
                 return;
             }
 
-            Call.sendMessage(bundle.get("commands.rtv.successful"));
+            bundled("commands.rtv.successful");
             Events.fire(new GameOverEvent(Team.crux));
         });
 
@@ -579,7 +581,7 @@ public class NeutralPlugin extends Plugin{
             }
 
             StringBuilder result = new StringBuilder();
-            result.append(bundle.format("commands.maps.page", page + 1, pages)).append("\n");
+            result.append(bundle.format("commands.maps.page", Locale.forLanguageTag(player.locale), page + 1, pages)).append("\n");
             for(int i = 6 * page; i < Math.min(6 * (page + 1), mapList.size); i++){
                 result.append("[lightgray] ").append(i + 1).append("[orange] ").append(mapList.get(i).name()).append("[white] ").append("\n");
             }
@@ -603,7 +605,7 @@ public class NeutralPlugin extends Plugin{
             }
 
             StringBuilder result = new StringBuilder();
-            result.append(bundle.format("commands.saves.page", page + 1, pages)).append("\n");
+            result.append(bundle.format("commands.saves.page", Locale.forLanguageTag(player.locale), page + 1, pages)).append("\n");
             for(int i = 6 * page; i < Math.min(6 * (page + 1), saves.size); i++){
                 result.append("[lightgray] ").append(i + 1).append("[orange] ").append(saves.get(i).nameWithoutExtension()).append("[white] ").append("\n");
             }
@@ -673,6 +675,10 @@ public class NeutralPlugin extends Plugin{
     }
 
     public static void bundled(Player player, String key, Object... values){
-        player.sendMessage(bundle.format(key, values));
+        player.sendMessage(bundle.format(key, Locale.forLanguageTag(player.locale), values));
+    }
+
+    public static void bundled(String key, Object... values){
+        Groups.player.each(p -> bundled(p, key, values));
     }
 }
