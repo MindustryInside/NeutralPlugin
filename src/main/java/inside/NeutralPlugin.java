@@ -48,7 +48,7 @@ public class NeutralPlugin extends Plugin{
     private final ObjectSet<String> votes = new ObjectSet<>();                //
     private final ObjectSet<String> alertIgnores = new ObjectSet<>();         // TODO(Skat): combine this
     private final ObjectSet<String> activeHistoryPlayers = new ObjectSet<>(); //
-    private final ObjectSet<String> spies = new ObjectSet<>();
+    private final ObjectSet<String> spies = new ObjectSet<>();                //
     private final Seq<Tuple3<Player, Player, Long>> send = new Seq<>();
     private final Interval interval = new Interval();
 
@@ -527,7 +527,10 @@ public class NeutralPlugin extends Plugin{
             bundled(player, player.tileOn().block() == core ? "commands.admin.core.success" : "commands.admin.core.failed");
         });
 
-        handler.<Player>register("hub", bundle.get("commands.hub.description"), (args, player) -> Call.connect(player.con, config.hubIp, config.hubPort));
+        handler.<Player>register("hub", bundle.get("commands.hub.description"), (args, player) -> {
+            Tuple2<String, Integer> ip = config.getHubIp();
+            Call.connect(player.con, ip.t1, ip.t2);
+        });
 
         handler.<Player>register("team", bundle.get("commands.admin.team.params"), bundle.get("commands.admin.teamp.description"), (args, player) -> {
             if(!player.admin){

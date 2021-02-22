@@ -1,6 +1,10 @@
 package inside;
 
-import java.util.Set;
+import arc.util.*;
+import inside.struct.*;
+import mindustry.Vars;
+
+import java.util.*;
 
 public class Config{
 
@@ -21,12 +25,8 @@ public class Config{
     /** Vote duration. In seconds. */
     public float voteDuration = 75f;
 
-    /** Ip used in <b>hub</b> command. */
-    public String hubIp = "localhost";
-
-    /* TODO(Skat): combine with hubIp and parse ip, port */
-    /** Port used in <b>hub</b> command. */
-    public int hubPort = 6567;
+    /** Ip and port used in <b>hub</b> command. */
+    public String hubIp = "localhost:6567";
 
     /** Plugin type. Defines various features. */
     public PluginType type = PluginType.def;
@@ -40,6 +40,17 @@ public class Config{
             "VALVE",
             "tuttop"
     );
+
+    public Tuple2<String, Integer> getHubIp(){
+        String ip = hubIp;
+        int port = Vars.port;
+        String[] parts = ip.split(":");
+        if(ip.contains(":") && Strings.canParsePositiveInt(parts[1])){
+            ip = parts[0];
+            port = Strings.parseInt(parts[1]);
+        }
+        return Tuples.of(ip, port);
+    }
 
     public enum PluginType{
 
