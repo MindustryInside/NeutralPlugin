@@ -212,7 +212,7 @@ public class ConfigEntry implements HistoryEntry{
     public final boolean connect;
 
     public ConfigEntry(ConfigEvent event, boolean connect){
-        this.name = Groups.player.contains(p -> event.player == p) ? Misc.colorizedName(event.player) : bundle.get("events.unknown"); // TODO(Skat): add locale to params
+        this.name =  Misc.colorizedName(event.player);
         this.block = event.tile.block();
         this.value = event.value;
         this.connect = connect;
@@ -268,7 +268,7 @@ public class ConfigEntry implements HistoryEntry{
             return bundle.format("events.history.config", locale, name, icons.get(item.name));
         }
 
-        return bundle.get("events.history.unknown", locale); // ага да
+        return bundle.get("events.history.unknown", locale);
     }
 
     @Override
