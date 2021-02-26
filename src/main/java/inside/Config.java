@@ -1,6 +1,6 @@
 package inside;
 
-import arc.util.*;
+import arc.util.Strings;
 import inside.struct.*;
 import mindustry.Vars;
 
@@ -8,6 +8,7 @@ import java.util.*;
 
 public class Config{
 
+    /** A distance of the nuke alert. Default 30 blocks. */
     public int alertDistance = 300;
 
     /** Vote ratio required. */

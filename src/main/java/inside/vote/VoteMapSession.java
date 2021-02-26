@@ -20,6 +20,14 @@ public class VoteMapSession extends VoteSession{
     }
 
     @Override
+    public void vote(Player player, int d){
+        votes += d;
+        voted.addAll(player.uuid(), netServer.admins.getInfo(player.uuid()).lastIP);
+        bundled("commands.nominate.map.vote", player.name, target.name(), votes, votesRequired());
+        checkPass();
+    }
+
+    @Override
     protected Task start(){
         return Timer.schedule(() -> {
             if(!checkPass()){
@@ -29,14 +37,6 @@ public class VoteMapSession extends VoteSession{
                 task.cancel();
             }
         }, config.voteDuration);
-    }
-
-    @Override
-    public void vote(Player player, int d){
-        votes += d;
-        voted.addAll(player.uuid(), netServer.admins.getInfo(player.uuid()).lastIP);
-        bundled("commands.nominate.map.vote", player.name, target.name(), votes, votesRequired());
-        checkPass();
     }
 
     @Override

@@ -202,10 +202,8 @@ public class NeutralPlugin extends Plugin{
             Building building = event.tile;
             Player target = event.player;
             if(building.block() == Blocks.thoriumReactor && event.item == Items.thorium && target.team().cores().contains(c -> event.tile.dst(c.x, c.y) < config.alertDistance)){
-                Groups.player.each(p -> !alertIgnores.contains(p.uuid()), p -> p.sendMessage(bundle.format("events.withdraw-thorium",
-                                                                                                           Locale.forLanguageTag(p.locale),
-                                                                                                           Misc.colorizedName(target),
-                                                                                                           building.tileX(), building.tileY())));
+                Groups.player.each(p -> !alertIgnores.contains(p.uuid()), p ->
+                        bundled(p, "events.withdraw-thorium", Misc.colorizedName(target), building.tileX(), building.tileY()));
             }
         });
 
@@ -216,10 +214,8 @@ public class NeutralPlugin extends Plugin{
                 Player target = event.builder.getPlayer();
 
                 if(interval.get(300)){
-                    Groups.player.each(p -> !alertIgnores.contains(p.uuid()), p -> p.sendMessage(bundle.format("events.alert",
-                                                                                                               Locale.forLanguageTag(p.locale),
-                                                                                                               target.name,
-                                                                                                               event.tile.x, event.tile.y)));
+                    Groups.player.each(p -> !alertIgnores.contains(p.uuid()), p ->
+                            bundled(p, "events.alert", target.name, event.tile.x, event.tile.y));
                 }
             }
         });
@@ -380,12 +376,12 @@ public class NeutralPlugin extends Plugin{
             String uuid = player.uuid();
             Locale locale = Locale.forLanguageTag(player.locale);
             if(args.length > 0 && activeHistoryPlayers.contains(uuid)){
-                if(!Strings.canParseInt(args[0]) && !Misc.bool(args[0])){
+                if(!Strings.canParseInt(args[0]) && !Boolean.parseBoolean(args[0])){
                     bundled(player, "commands.page-not-int");
                     return;
                 }
 
-                boolean forward = !Strings.canParseInt(args[0]) ? Misc.bool(args[0]) : args.length > 1 && Misc.bool(args[1]);
+                boolean forward = !Strings.canParseInt(args[0]) ? Boolean.parseBoolean(args[0]) : args.length > 1 && Boolean.parseBoolean(args[1]);
                 int mouseX = Mathf.clamp(Mathf.round(player.mouseX / 8), 1, world.width());
                 int mouseY = Mathf.clamp(Mathf.round(player.mouseY / 8), 1, world.height());
                 CacheSeq<HistoryEntry> entries = history[mouseX][mouseY];

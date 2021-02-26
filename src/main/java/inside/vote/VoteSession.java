@@ -21,9 +21,9 @@ public abstract class VoteSession{
         return voted;
     }
 
-    protected abstract Task start();
-
     public abstract void vote(Player player, int d);
+
+    protected abstract Task start();
 
     protected abstract boolean checkPass();
 

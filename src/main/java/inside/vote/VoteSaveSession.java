@@ -18,6 +18,14 @@ public class VoteSaveSession extends VoteSession{
     }
 
     @Override
+    public void vote(Player player, int d){
+        votes += d;
+        voted.addAll(player.uuid(), netServer.admins.getInfo(player.uuid()).lastIP);
+        Groups.player.each(p -> bundled(p, "commands.nominate.save.vote", player.name, target, votes, votesRequired()));
+        checkPass();
+    }
+
+    @Override
     protected Task start(){
         return Timer.schedule(() -> {
             if(!checkPass()){
@@ -27,14 +35,6 @@ public class VoteSaveSession extends VoteSession{
                 task.cancel();
             }
         }, config.voteDuration);
-    }
-
-    @Override
-    public void vote(Player player, int d){
-        votes += d;
-        voted.addAll(player.uuid(), netServer.admins.getInfo(player.uuid()).lastIP);
-        Groups.player.each(p -> bundled(p, "commands.nominate.save.vote", player.name, target, votes, votesRequired()));
-        checkPass();
     }
 
     @Override

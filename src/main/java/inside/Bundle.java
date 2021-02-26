@@ -11,7 +11,7 @@ public class Bundle{
         try{
             return ResourceBundle.getBundle("bundles.bundle", locale).getString(key);
         }catch(Throwable t){
-            if(t instanceof MissingResourceException){
+            if(t instanceof MissingResourceException){ // may be a fall to infinite loop
                 return get(key, config.locale);
             }
             return "???" + key + "???";
