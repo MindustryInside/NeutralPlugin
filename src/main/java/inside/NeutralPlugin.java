@@ -288,9 +288,38 @@ public class NeutralPlugin extends Plugin{
         handler.<Player>register("t", "<message...>", "Send a message only to your teammates.", (args, player) -> {
             String message = netServer.admins.filterMessage(player, args[0]);
             if(message != null){
-                Groups.player.each(p -> p.team() == player.team() || spies.contains(p.uuid()), o -> o.sendMessage(message, player, "[#" + player.team().color.toString() + "]<T>" + NetClient.colorizeName(player.id(), player.name)));
+                Groups.player.each(p -> p.team() == player.team() || spies.contains(p.uuid()),
+                                   o -> o.sendMessage(message, player, "[#" + player.team().color.toString() + "]<T>" + NetClient.colorizeName(player.id(), player.name)));
             }
         });
+
+        //TODO(Skat): localize this
+        handler.<Player>register("help", "[page]", "Lists all commands.", (args, player) -> {
+            if(args.length > 0 && !Strings.canParseInt(args[0])){
+                bundled(player, "commands.page-not-int");
+                return;
+            }
+            int commandsPerPage = 6;
+            int page = args.length > 0 ? Strings.parseInt(args[0]) : 1;
+            int pages = Mathf.ceil((float)handler.getCommandList().size / commandsPerPage);
+
+            page--;
+
+            if(page >= pages || page < 0){
+                bundled(player, "commands.under-page", pages);
+                return;
+            }
+
+            StringBuilder result = new StringBuilder();
+            result.append(Strings.format("[orange]-- Commands Page[lightgray] @[gray]/[lightgray]@[orange] --\n\n", (page + 1), pages));
+
+            for(int i = commandsPerPage * page; i < Math.min(commandsPerPage * (page + 1), handler.getCommandList().size); i++){
+                CommandHandler.Command command = handler.getCommandList().get(i);
+                result.append("[orange] /").append(command.text).append("[white] ").append(command.paramText).append("[lightgray] - ").append(command.description).append("\n");
+            }
+            player.sendMessage(result.toString());
+        });
+
 
         //TODO(Skat): localize this
         handler.<Player>register("l", "<range> <message...>", "Send a message in the range.", (args, player) -> {
@@ -351,7 +380,7 @@ public class NeutralPlugin extends Plugin{
         handler.<Player>register("r", "<text...>", "Reply direct message.", (args, player) -> {
             Tuple3<Player, Player, Long> message = send.find(m -> m.t2 == player);
             if(message == null){
-                player.sendMessage("[scarlet]No one to answer.");
+                bundled(player, "commands.r.no-answer");
                 return;
             }
             Player target = message.t1;

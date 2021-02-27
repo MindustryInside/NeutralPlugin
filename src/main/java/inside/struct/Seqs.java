@@ -9,10 +9,10 @@ import java.util.concurrent.TimeUnit;
 
 import static inside.struct.CacheSeq.UNSET_INT;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings("unchecked")
 public abstract class Seqs{
 
-    public static final Queue EMPTY_QUEUE = new EmptyQueue();
+    public static final Queue<?> EMPTY_QUEUE = new EmptyQueue<>();
 
     private Seqs(){}
 
