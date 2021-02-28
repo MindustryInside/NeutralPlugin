@@ -35,6 +35,7 @@ public class Config{
     /** Plugin locale. */
     public Locale locale = Locale.forLanguageTag("ru");
 
+    /** Illegal names. If player has one of this names he be a kicked from server. */
     public Set<String> bannedNames = Set.of(
             "IGGGAMES",
             "CODEX",
@@ -42,6 +43,7 @@ public class Config{
             "tuttop"
     );
 
+    /** Parsed pair with port and ip for <b>hub</b> command. */
     public Tuple2<String, Integer> getHubIp(){
         String ip = hubIp;
         int port = Vars.port;

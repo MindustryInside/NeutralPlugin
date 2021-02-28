@@ -188,8 +188,8 @@ public class NeutralPlugin extends Plugin{
 
         //
 
-        //TODO(Skat): localize this
-        Events.on(PlayerJoin.class, event -> forbiddenIps.each(i -> i.matchIp(event.player.con.address), i -> event.player.con.kick(bundle.get("events.vpn-ip"))));
+        Events.on(PlayerJoin.class, event -> forbiddenIps.each(i -> i.matchIp(event.player.con.address), i ->
+                event.player.con.kick(bundle.get("events.vpn-ip", Locale.forLanguageTag(event.player.locale)))));
 
         Events.on(PlayerConnect.class, event -> {
             Player player = event.player;
@@ -283,6 +283,8 @@ public class NeutralPlugin extends Plugin{
     public void registerClientCommands(CommandHandler handler){
 
         handler.removeCommand("t");
+
+        handler.removeCommand("help");
 
         //TODO(Skat): localize this
         handler.<Player>register("t", "<message...>", "Send a message only to your teammates.", (args, player) -> {

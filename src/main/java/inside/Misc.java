@@ -2,6 +2,7 @@ package inside;
 
 import arc.files.Fi;
 import arc.util.Strings;
+import mindustry.core.NetClient;
 import mindustry.game.Team;
 import mindustry.gen.Player;
 import mindustry.maps.Map;
@@ -19,6 +20,14 @@ public abstract class Misc{
         return Strings.format("[#@]@", team.color, team);
     }
 
+    /**
+     * Better method for getting colorized player nickname.
+     * Unlike {@link NetClient#colorizeName(int, String)} doesn't check player existing
+     *
+     * @param player - target player
+     * @return colorized player nickname
+     * @throws NullPointerException - if player is null
+     */
     public static String colorizedName(Player player){
         Objects.requireNonNull(player, "player");
         return "[#" + player.color().toString().toUpperCase() + "]" + player.name;

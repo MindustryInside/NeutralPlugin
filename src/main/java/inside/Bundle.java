@@ -5,16 +5,16 @@ import java.util.*;
 
 import static inside.NeutralPlugin.config;
 
+// static?
 public class Bundle{
 
     public String get(String key, Locale locale){
         try{
-            return ResourceBundle.getBundle("bundles.bundle", locale).getString(key);
-        }catch(Throwable t){
-            if(t instanceof MissingResourceException){ // may be a fall to infinite loop
-                return get(key, config.locale);
-            }
-            return "???" + key + "???";
+            ResourceBundle bundle = ResourceBundle.getBundle("bundles.bundle", locale);
+            return bundle.containsKey(key) ? bundle.getString(key) : "???" + key + "???";
+        }catch(MissingResourceException t){
+            // may be a fall to infinite loop
+            return get(key, config.locale);
         }
     }
 
