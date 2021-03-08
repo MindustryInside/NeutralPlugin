@@ -2,19 +2,17 @@ package inside.entry;
 
 import arc.struct.StringMap;
 import arc.util.Time;
+import inside.Misc;
 import mindustry.content.Blocks;
 import mindustry.entities.units.UnitCommand;
 import mindustry.game.EventType.ConfigEvent;
-import mindustry.gen.Groups;
 import mindustry.type.*;
 import mindustry.world.*;
-import inside.Misc;
 
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
-import static mindustry.Vars.world;
 import static inside.NeutralPlugin.bundle;
+import static mindustry.Vars.world;
 
 public class ConfigEntry implements HistoryEntry{
     private static final StringMap icons = StringMap.of(
@@ -205,7 +203,6 @@ public class ConfigEntry implements HistoryEntry{
         commands = bundle.get("events.history.config.command-center.all").split(", ");
     }
 
-    public final long lastAccessTime = Time.millis();
     public final String name;
     public final Block block;
     public final Object value;
@@ -269,10 +266,5 @@ public class ConfigEntry implements HistoryEntry{
         }
 
         return bundle.get("events.history.unknown", locale);
-    }
-
-    @Override
-    public long getLastAccessTime(TimeUnit unit){
-        return unit.convert(Time.timeSinceMillis(lastAccessTime), TimeUnit.MILLISECONDS);
     }
 }

@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import static inside.NeutralPlugin.bundle;
 
 public class BlockEntry implements HistoryEntry{
-    public final long lastAccessTime = Time.millis();
     @Nullable
     public final String name;
     public final Unit unit;
@@ -42,10 +41,5 @@ public class BlockEntry implements HistoryEntry{
             base += bundle.format("events.history.block.construct.rotate", locale, RotateEntry.sides[rotation]);
         }
         return base;
-    }
-
-    @Override
-    public long getLastAccessTime(TimeUnit unit){
-        return unit.convert(Time.timeSinceMillis(lastAccessTime), TimeUnit.MILLISECONDS);
     }
 }

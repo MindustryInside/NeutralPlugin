@@ -18,6 +18,10 @@ public class Bundle{
         }
     }
 
+    public boolean has(String key){
+        return ResourceBundle.getBundle("bundles.bundle", config.locale).containsKey(key);
+    }
+
     public String get(String key){
         return get(key, config.locale);
     }

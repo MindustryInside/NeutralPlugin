@@ -27,7 +27,6 @@ import mindustry.world.blocks.logic.LogicBlock;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static mindustry.Vars.*;
 
@@ -286,28 +285,26 @@ public class NeutralPlugin extends Plugin{
 
         handler.removeCommand("help");
 
-        //TODO(Skat): localize this
-        handler.<Player>register("t", "<message...>", "Send a message only to your teammates.", (args, player) -> {
+        handler.<Player>register("t", "<text...>", "commands.t.description", (args, player) -> {
             String message = netServer.admins.filterMessage(player, args[0]);
             if(message != null){
                 Groups.player.each(p -> p.team() == player.team() || spies.contains(p.uuid()),
-                                   o -> o.sendMessage(message, player, "[#" + player.team().color.toString() + "]<T>" + NetClient.colorizeName(player.id(), player.name)));
+                                   o -> o.sendMessage(message, player, "[#" + player.team().color + "]<T>" + NetClient.colorizeName(player.id(), player.name)));
             }
         });
 
         //TODO(Skat): localize this
-        handler.<Player>register("help", "[page]", "Lists all commands.", (args, player) -> {
+        handler.<Player>register("help", "[page]", "commands.help.description", (args, player) -> {
             if(args.length > 0 && !Strings.canParseInt(args[0])){
                 bundled(player, "commands.page-not-int");
                 return;
             }
+            Locale locale = Locale.forLanguageTag(player.locale);
             int commandsPerPage = 6;
             int page = args.length > 0 ? Strings.parseInt(args[0]) : 1;
             int pages = Mathf.ceil((float)handler.getCommandList().size / commandsPerPage);
 
-            page--;
-
-            if(page >= pages || page < 0){
+            if(--page >= pages || page < 0){
                 bundled(player, "commands.under-page", pages);
                 return;
             }
@@ -317,16 +314,18 @@ public class NeutralPlugin extends Plugin{
 
             for(int i = commandsPerPage * page; i < Math.min(commandsPerPage * (page + 1), handler.getCommandList().size); i++){
                 CommandHandler.Command command = handler.getCommandList().get(i);
-                result.append("[orange] /").append(command.text).append("[white] ").append(command.paramText).append("[lightgray] - ").append(command.description).append("\n");
+                result.append("[orange] /").append(command.text).append("[white] ")
+                        .append(command.paramText)
+                        .append("[lightgray] - ")
+                        .append(bundle.has(command.description) ? bundle.get(command.description, locale) : command.description)
+                        .append("\n");
             }
             player.sendMessage(result.toString());
         });
 
-
-        //TODO(Skat): localize this
-        handler.<Player>register("l", "<range> <message...>", "Send a message in the range.", (args, player) -> {
+        handler.<Player>register("l", "<range> <message...>", "commands.l.description", (args, player) -> {
             if(!Strings.canParseInt(args[0])){
-                player.sendMessage("[scarlet]'range' must be a number.");
+                bundled(player, "commands.l.range-not-int");
                 return;
             }
 
@@ -337,49 +336,47 @@ public class NeutralPlugin extends Plugin{
             }
         });
 
-        //TODO(Skat): localize this
-        handler.<Player>register("spy", "Admins command for chat listen.", (args, player) -> {
+        handler.<Player>register("spy", "commands.admin.spy.description", (args, player) -> {
             if(!player.admin){
-                player.sendMessage("[scarlet]You must be admin to use this command.");
+                bundled(player, "commands.permission-denied");
                 return;
             }
 
             if(spies.contains(player.uuid())){
                 spies.remove(player.uuid());
-                player.sendMessage("[lightgray]Listening mode [orange]disabled[].");
+                bundled(player, "commands.admin.spy.enabled");
             }else{
                 spies.add(player.uuid());
-                player.sendMessage("[lightgray]Listening mode [orange]enabled[].");
+                bundled(player, "commands.admin.spy.disabled");
             }
         });
 
-        //TODO(Skat): localize this
-        handler.<Player>register("m", "<id> <text...>", "Send direct message.", (args, player) -> {
+        handler.<Player>register("m", "<id> <text...>", "commands.m.description", (args, player) -> {
             if(!Strings.canParseInt(args[0])){
-                player.sendMessage("[scarlet]Id must be number.");
+                bundled(player, "commands.m.id-not-int");
                 return;
             }
 
             int id = Strings.parseInt(args[0]);
             Player target = Groups.player.find(p -> p.id == id);
             if(target == null){
-                player.sendMessage("[scarlet]Player not found.");
+                bundled(player, "commands.player-not-found");
                 return;
             }
 
             if(send.contains(t -> t.t2 == target)){
-                player.sendMessage("[scarlet]Please wait! Player is busy.");
+                bundled(player, "commands.m.player-busy");
                 return;
             }
 
             send.add(Tuples.of(player, target, Time.millis()));
 
+            // TODO: localize this?
             target.sendMessage(Strings.format("[lightgray][[@ --> [orange]You[lightgray]]:[white] @", NetClient.colorizeName(player.id, player.name), args[1]));
             player.sendMessage(Strings.format("[lightgray][[[orange]You[lightgray] --> @]:[white] @", NetClient.colorizeName(target.id, target.name), args[1]));
         });
 
-        //TODO(Skat): localize this
-        handler.<Player>register("r", "<text...>", "Reply direct message.", (args, player) -> {
+        handler.<Player>register("r", "<text...>", "commands.r.description", (args, player) -> {
             Tuple3<Player, Player, Long> message = send.find(m -> m.t2 == player);
             if(message == null){
                 bundled(player, "commands.r.no-answer");
@@ -389,11 +386,12 @@ public class NeutralPlugin extends Plugin{
 
             send.add(Tuples.of(player, target, Time.millis()));
 
+            // TODO: localize this?
             target.sendMessage(Strings.format("[lightgray][[@ --> [orange]You[lightgray]]:[white] @", NetClient.colorizeName(player.id, player.name), args[0]));
             player.sendMessage(Strings.format("[lightgray][[[orange]You[lightgray] --> @]:[white] @", NetClient.colorizeName(target.id, target.name), args[0]));
         });
 
-        handler.<Player>register("alert", bundle.get("commands.alert.description"), (args, player) -> {
+        handler.<Player>register("alert", "commands.alert.description", (args, player) -> {
             if(alertIgnores.contains(player.uuid())){
                 alertIgnores.remove(player.uuid());
                 bundled(player, "commands.alert.on");
@@ -403,16 +401,15 @@ public class NeutralPlugin extends Plugin{
             }
         });
 
-        handler.<Player>register("history", bundle.get("commands.history.params"), bundle.get("commands.history.description"), (args, player) -> {
+        handler.<Player>register("history", "[page]", "commands.history.description", (args, player) -> {
             String uuid = player.uuid();
             Locale locale = Locale.forLanguageTag(player.locale);
             if(args.length > 0 && activeHistoryPlayers.contains(uuid)){
-                if(!Strings.canParseInt(args[0]) && !Boolean.parseBoolean(args[0])){
+                if(!Strings.canParseInt(args[0])){
                     bundled(player, "commands.page-not-int");
                     return;
                 }
 
-                boolean forward = !Strings.canParseInt(args[0]) ? Boolean.parseBoolean(args[0]) : args.length > 1 && Boolean.parseBoolean(args[1]);
                 int mouseX = Mathf.clamp(Mathf.round(player.mouseX / 8), 1, world.width());
                 int mouseY = Mathf.clamp(Mathf.round(player.mouseY / 8), 1, world.height());
                 CacheSeq<HistoryEntry> entries = history[mouseX][mouseY];
@@ -435,12 +432,7 @@ public class NeutralPlugin extends Plugin{
                 for(int i = 6 * page; i < Math.min(6 * (page + 1), entries.size); i++){
                     HistoryEntry entry = entries.get(i);
 
-                    result.append(entry.getMessage(locale));
-                    if(forward){
-                        result.append(bundle.format("events.history.last-access-time", locale, entry.getLastAccessTime(TimeUnit.SECONDS)));
-                    }
-
-                    result.append("\n");
+                    result.append(entry.getMessage(locale)).append("\n");
                 }
 
                 player.sendMessage(result.toString());
@@ -454,7 +446,7 @@ public class NeutralPlugin extends Plugin{
         });
 
         if(config.type == PluginType.pvp){
-            handler.<Player>register("france", bundle.get("commands.surrender.description"), (args, player) -> {
+            handler.<Player>register("france", "commands.surrender.description", (args, player) -> {
                 String uuid = player.uuid();
                 Team team = player.team();
                 ObjectSet<String> uuids = surrendered.get(team, ObjectSet::new);
@@ -483,7 +475,7 @@ public class NeutralPlugin extends Plugin{
             });
         }
 
-        handler.<Player>register("pl", bundle.get("commands.pl.params"), bundle.get("commands.pl.description"), (args, player) -> {
+        handler.<Player>register("pl", "[page]", "commands.pl.description", (args, player) -> {
             if(args.length > 0 && !Strings.canParseInt(args[0])){
                 bundled(player, "commands.page-not-int");
                 return;
@@ -512,7 +504,7 @@ public class NeutralPlugin extends Plugin{
             player.sendMessage(result.toString());
         });
 
-        handler.<Player>register("rtv", bundle.get("commands.rtv.description"), (args, player) -> {
+        handler.<Player>register("rtv", "commands.rtv.description", (args, player) -> {
             if(votes.contains(player.uuid())){
                 bundled(player, "commands.already-voted");
                 return;
@@ -531,7 +523,7 @@ public class NeutralPlugin extends Plugin{
             Events.fire(new GameOverEvent(Team.crux));
         });
 
-        handler.<Player>register("go", bundle.get("commands.admin.go.description"), (args, player) -> {
+        handler.<Player>register("go", "commands.admin.go.description", (args, player) -> {
             if(!player.admin){
                 bundled(player, "commands.permission-denied");
             }else{
@@ -539,7 +531,7 @@ public class NeutralPlugin extends Plugin{
             }
         });
 
-        handler.<Player>register("core", bundle.get("commands.admin.core.params"), bundle.get("commands.admin.core.description"), (args, player) -> {
+        handler.<Player>register("core", "<small/medium/big>", "commands.admin.core.description", (args, player) -> {
             if(!player.admin){
                 bundled(player, "commands.permission-denied");
                 return;
@@ -556,12 +548,12 @@ public class NeutralPlugin extends Plugin{
             bundled(player, player.tileOn().block() == core ? "commands.admin.core.success" : "commands.admin.core.failed");
         });
 
-        handler.<Player>register("hub", bundle.get("commands.hub.description"), (args, player) -> {
+        handler.<Player>register("hub", "commands.hub.description", (args, player) -> {
             Tuple2<String, Integer> ip = config.getHubIp();
             Call.connect(player.con, ip.t1, ip.t2);
         });
 
-        handler.<Player>register("team", bundle.get("commands.admin.team.params"), bundle.get("commands.admin.teamp.description"), (args, player) -> {
+        handler.<Player>register("team", "<command> [target]", "commands.admin.teamp.description", (args, player) -> {
             if(!player.admin){
                 bundled(player, "commands.permission-denied");
                 return;
@@ -583,7 +575,7 @@ public class NeutralPlugin extends Plugin{
             target.team(team);
         });
 
-        handler.<Player>register("s", bundle.get("commands.admin.vanish.description"), (args, player) -> {
+        handler.<Player>register("s", "commands.admin.vanish.description", (args, player) -> {
             if(!player.admin){
                 bundled(player, "commands.permission-denied");
             }else{
@@ -592,7 +584,7 @@ public class NeutralPlugin extends Plugin{
             }
         });
 
-        handler.<Player>register("maps", bundle.get("commands.maps.params"), bundle.get("commands.maps.description"), (args, player) -> {
+        handler.<Player>register("maps", "[page]", "commands.maps.description", (args, player) -> {
             if(args.length > 0 && !Strings.canParseInt(args[0])){
                 bundled(player, "commands.page-not-int");
                 return;
@@ -616,7 +608,7 @@ public class NeutralPlugin extends Plugin{
             player.sendMessage(result.toString());
         });
 
-        handler.<Player>register("saves", bundle.get("commands.saves.params"), bundle.get("commands.saves.description"), (args, player) -> {
+        handler.<Player>register("saves", "[page]", "commands.saves.description", (args, player) -> {
             if(args.length > 0 && !Strings.canParseInt(args[0])){
                 bundled(player, "commands.page-not-int");
                 return;
@@ -640,7 +632,7 @@ public class NeutralPlugin extends Plugin{
             player.sendMessage(result.toString());
         });
 
-        handler.<Player>register("nominate", bundle.get("commands.nominate.params"), bundle.get("commands.nominate.description"), (args, player) -> {
+        handler.<Player>register("nominate", "<map/save/load> [name...]", "commands.nominate.description", (args, player) -> {
             VoteMode mode;
             try{
                 mode = VoteMode.valueOf(args[0].toLowerCase());

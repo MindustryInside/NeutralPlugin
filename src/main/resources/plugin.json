@@ -2,6 +2,6 @@
   "name": "NeutralPlugin",
   "author": "Mindustry Inside",
   "main": "inside.NeutralPlugin",
-  "description": "",
+  "description": "Fork of the Pandorum.su plugin.",
   "version": "0.1"
 }
