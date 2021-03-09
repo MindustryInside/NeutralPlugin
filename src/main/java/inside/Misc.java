@@ -15,6 +15,13 @@ public abstract class Misc{
 
     private Misc(){}
 
+    /**
+     * Method for getting colorized team name.
+     *
+     * @param team - target team
+     * @return colorized team name
+     * @throws NullPointerException - if team is null
+     */
     public static String colorizedTeam(Team team){
         Objects.requireNonNull(team, "team");
         return Strings.format("[#@]@", team.color, team);

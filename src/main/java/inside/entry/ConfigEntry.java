@@ -1,8 +1,7 @@
 package inside.entry;
 
 import arc.struct.StringMap;
-import arc.util.Time;
-import inside.Misc;
+import inside.*;
 import mindustry.content.Blocks;
 import mindustry.entities.units.UnitCommand;
 import mindustry.game.EventType.ConfigEvent;
@@ -11,7 +10,6 @@ import mindustry.world.*;
 
 import java.util.Locale;
 
-import static inside.NeutralPlugin.bundle;
 import static mindustry.Vars.world;
 
 public class ConfigEntry implements HistoryEntry{
@@ -200,7 +198,7 @@ public class ConfigEntry implements HistoryEntry{
     private static final String[] commands;
 
     static{
-        commands = bundle.get("events.history.config.command-center.all").split(", ");
+        commands = Bundle.get("events.history.config.command-center.all").split(", ");
     }
 
     public final String name;
@@ -209,7 +207,7 @@ public class ConfigEntry implements HistoryEntry{
     public final boolean connect;
 
     public ConfigEntry(ConfigEvent event, boolean connect){
-        this.name =  Misc.colorizedName(event.player);
+        this.name = Misc.colorizedName(event.player);
         this.block = event.tile.block();
         this.value = event.value;
         this.connect = connect;
@@ -223,48 +221,47 @@ public class ConfigEntry implements HistoryEntry{
             int data = (int)value;
             Tile tile = world.tile(data);
             if(tile == null){
-                return bundle.get("events.history.unknown", locale);
+                return Bundle.get("events.history.unknown", locale);
             }
 
             if(connect){
-                return bundle.format("events.history.config.power-node.connect", locale, name, block, tile.x, tile.y);
+                return Bundle.format("events.history.config.power-node.connect", locale, name, block, tile.x, tile.y);
             }
-
-            return bundle.format("events.history.config.power-node.disconnect", locale, name, block, tile.x, tile.y);
+            return Bundle.format("events.history.config.power-node.disconnect", locale, name, block, tile.x, tile.y);
         }
 
         if(block == Blocks.door || block == Blocks.doorLarge){
             boolean data = (boolean)value;
-            return data ? bundle.format("events.history.config.door.on", locale, name, block) : bundle.format("events.history.config.door.off", locale, name, block);
+            return data ? Bundle.format("events.history.config.door.on", locale, name, block) :
+                   Bundle.format("events.history.config.door.off", locale, name, block);
         }
 
         if(block == Blocks.switchBlock){
             boolean data = (boolean)value;
-            return data ? bundle.format("events.history.config.switch.on", locale, name) : bundle.format("events.history.config.switch.off", locale, name);
+            return data ? Bundle.format("events.history.config.switch.on", locale, name) :
+                   Bundle.format("events.history.config.switch.off", locale, name);
         }
 
         if(block == Blocks.commandCenter){
-            return bundle.format("events.history.config.command-center", locale, name, commands[((UnitCommand)value).ordinal()]);
+            return Bundle.format("events.history.config.command-center", locale, name, commands[((UnitCommand)value).ordinal()]);
         }
 
         if(block == Blocks.liquidSource){
             Liquid liquid = (Liquid)value;
             if(liquid == null){
-                return bundle.format("events.history.config.default", locale, name);
+                return Bundle.format("events.history.config.default", locale, name);
             }
-
-            return bundle.format("events.history.config", locale, name, icons.get(liquid.name));
+            return Bundle.format("events.history.config", locale, name, icons.get(liquid.name));
         }
 
         if(block == Blocks.unloader || block == Blocks.sorter || block == Blocks.invertedSorter || block == Blocks.itemSource){
             Item item = (Item)value;
             if(item == null){
-                return bundle.format("events.history.config.default", locale, name);
+                return Bundle.format("events.history.config.default", locale, name);
             }
-
-            return bundle.format("events.history.config", locale, name, icons.get(item.name));
+            return Bundle.format("events.history.config", locale, name, icons.get(item.name));
         }
 
-        return bundle.get("events.history.unknown", locale);
+        return Bundle.get("events.history.unknown", locale);
     }
 }

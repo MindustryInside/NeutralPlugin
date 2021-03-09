@@ -1,16 +1,15 @@
 package inside.entry;
 
+import inside.Bundle;
 import mindustry.world.Block;
 
 import java.util.Locale;
-
-import static inside.NeutralPlugin.bundle;
 
 public class RotateEntry implements HistoryEntry{
     protected static final String[] sides;
 
     static{
-        sides = bundle.get("events.history.rotate.all").split(", ");
+        sides = Bundle.get("events.history.rotate.all").split(", ");
     }
 
     public final String name;
@@ -25,6 +24,6 @@ public class RotateEntry implements HistoryEntry{
 
     @Override
     public String getMessage(Locale locale){
-        return bundle.format("events.history.rotate", locale, name, block.name, sides[rotation]);
+        return Bundle.format("events.history.rotate", locale, name, block.name, sides[rotation]);
     }
 }

@@ -5,10 +5,11 @@ import java.util.*;
 
 import static inside.NeutralPlugin.config;
 
-// static?
 public class Bundle{
 
-    public String get(String key, Locale locale){
+    private Bundle(){}
+
+    public static String get(String key, Locale locale){
         try{
             ResourceBundle bundle = ResourceBundle.getBundle("bundles.bundle", locale);
             return bundle.containsKey(key) ? bundle.getString(key) : "???" + key + "???";
@@ -18,19 +19,19 @@ public class Bundle{
         }
     }
 
-    public boolean has(String key){
+    public static boolean has(String key){
         return ResourceBundle.getBundle("bundles.bundle", config.locale).containsKey(key);
     }
 
-    public String get(String key){
+    public static String get(String key){
         return get(key, config.locale);
     }
 
-    public String format(String key, Locale locale, Object... values){
+    public static String format(String key, Locale locale, Object... values){
         return MessageFormat.format(get(key, locale), values);
     }
 
-    public String format(String key, Object... values){
+    public static String format(String key, Object... values){
         return format(key, config.locale, values);
     }
 }

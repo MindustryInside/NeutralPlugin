@@ -24,6 +24,7 @@ import mindustry.net.Administration.PlayerInfo;
 import mindustry.world.*;
 import mindustry.world.blocks.logic.LogicBlock;
 
+import java.io.InputStream;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -41,7 +42,6 @@ public class NeutralPlugin extends Plugin{
 
     public static VoteSession[] current = {null};
     public static Config config;
-    public static Bundle bundle;
 
     private final ObjectMap<Team, ObjectSet<String>> surrendered = new ObjectMap<>();
     private final ObjectSet<String> votes = new ObjectSet<>();                //
@@ -57,7 +57,7 @@ public class NeutralPlugin extends Plugin{
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
 
-    public NeutralPlugin(){
+    static{
 
         Fi cfg = dataDirectory.child("config.json");
         if(!cfg.exists()){
@@ -66,14 +66,14 @@ public class NeutralPlugin extends Plugin{
         }else{
             config = gson.fromJson(cfg.reader(), Config.class);
         }
-
-        bundle = new Bundle();
     }
 
     @Override
     public void init(){
         try{
-            forbiddenIps = Seq.with(Streams.copyString(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("vpn-ipv4.txt"))).split(System.lineSeparator())).map(IpInfo::new);
+            InputStream stream = getClass().getClassLoader().getResourceAsStream("vpn-ipv4.txt");
+            Objects.requireNonNull(stream, "stream");
+            forbiddenIps = Seq.with(Streams.copyString(stream).split(System.lineSeparator())).map(IpInfo::new);
         }catch(Throwable t){
             throw new ArcRuntimeException(t);
         }
@@ -160,11 +160,12 @@ public class NeutralPlugin extends Plugin{
                 CacheSeq<HistoryEntry> entries = history[event.tile.x][event.tile.y];
 
                 Locale locale = Locale.forLanguageTag(event.player.locale);
-                StringBuilder message = new StringBuilder(bundle.format("events.history.title", locale, event.tile.x, event.tile.y));
+                StringBuilder message = new StringBuilder(Bundle.format("events.history.title",
+                        locale, event.tile.x, event.tile.y));
 
                 entries.cleanUp();
                 if(entries.isOverflown()){
-                    message.append(bundle.get("events.history.overflow", locale));
+                    message.append(Bundle.get("events.history.overflow", locale));
                 }
 
                 int i = 0;
@@ -176,7 +177,7 @@ public class NeutralPlugin extends Plugin{
                 }
 
                 if(entries.isEmpty()){
-                    message.append(bundle.get("events.history.empty", locale));
+                    message.append(Bundle.get("events.history.empty", locale));
                 }
 
                 event.player.sendMessage(message.toString());
@@ -188,19 +189,21 @@ public class NeutralPlugin extends Plugin{
         //
 
         Events.on(PlayerJoin.class, event -> forbiddenIps.each(i -> i.matchIp(event.player.con.address), i ->
-                event.player.con.kick(bundle.get("events.vpn-ip", Locale.forLanguageTag(event.player.locale)))));
+                event.player.con.kick(Bundle.get("events.vpn-ip", Locale.forLanguageTag(event.player.locale)))));
 
         Events.on(PlayerConnect.class, event -> {
             Player player = event.player;
             if(config.bannedNames.contains(player.name())){
-                player.con.kick(bundle.get("events.unofficial-mindustry", Locale.forLanguageTag(player.locale)), 60000);
+                player.con.kick(Bundle.get("events.unofficial-mindustry",
+                        Locale.forLanguageTag(player.locale)), 60000);
             }
         });
 
         Events.on(DepositEvent.class, event -> {
             Building building = event.tile;
             Player target = event.player;
-            if(building.block() == Blocks.thoriumReactor && event.item == Items.thorium && target.team().cores().contains(c -> event.tile.dst(c.x, c.y) < config.alertDistance)){
+            if(building.block() == Blocks.thoriumReactor && event.item == Items.thorium && target.team().cores()
+                    .contains(c -> event.tile.dst(c.x, c.y) < config.alertDistance)){
                 Groups.player.each(p -> !alertIgnores.contains(p.uuid()), p ->
                         bundled(p, "events.withdraw-thorium", Misc.colorizedName(target), building.tileX(), building.tileY()));
             }
@@ -251,29 +254,29 @@ public class NeutralPlugin extends Plugin{
             Log.info("Reloaded");
         });
 
-        handler.register("tell", bundle.get("commands.tell.params"), bundle.get("commands.tell.description"), args -> {
+        handler.register("tell", Bundle.get("commands.tell.params"), Bundle.get("commands.tell.description"), args -> {
             Player target = Groups.player.find(p -> p.name().equalsIgnoreCase(args[0]) || p.uuid().equalsIgnoreCase(args[0]));
             if(target == null){
-                Log.info(bundle.get("commands.tell.player-not-found"));
+                Log.info(Bundle.get("commands.tell.player-not-found"));
                 return;
             }
 
             target.sendMessage("[scarlet][[Server]:[] " + args[1]);
-            Log.info(bundle.format("commands.tell.log", target.name(), args[1]));
+            Log.info(Bundle.format("commands.tell.log", target.name(), args[1]));
         });
 
-        handler.register("despw", bundle.get("commands.despw.description"), args -> {
+        handler.register("despw", Bundle.get("commands.despw.description"), args -> {
             Groups.unit.each(Unit::kill);
-            Log.info(bundle.get("commands.despw.log"));
+            Log.info(Bundle.get("commands.despw.log"));
         });
 
-        handler.register("kicks", bundle.get("commands.kicks.description"), args -> {
+        handler.register("kicks", Bundle.get("commands.kicks.description"), args -> {
             Log.info("Kicks: @", netServer.admins.kickedIPs.isEmpty() ? "<none>" : "");
             for(Entry<String, Long> e : netServer.admins.kickedIPs){
                 PlayerInfo info = netServer.admins.findByIPs(e.key).first();
                 Log.info("  @ / ID: '@' / IP: '@' / END: @",
-                         info.lastName, info.id, info.lastIP,
-                         formatter.format(Instant.ofEpochMilli(e.value).atZone(ZoneId.systemDefault())));
+                        info.lastName, info.id, info.lastIP,
+                        formatter.format(Instant.ofEpochMilli(e.value).atZone(ZoneId.systemDefault())));
             }
         });
     }
@@ -289,7 +292,8 @@ public class NeutralPlugin extends Plugin{
             String message = netServer.admins.filterMessage(player, args[0]);
             if(message != null){
                 Groups.player.each(p -> p.team() == player.team() || spies.contains(p.uuid()),
-                                   o -> o.sendMessage(message, player, "[#" + player.team().color + "]<T>" + NetClient.colorizeName(player.id(), player.name)));
+                        o -> o.sendMessage(message, player, "[#" + player.team().color + "]<T>" +
+                                NetClient.colorizeName(player.id(), player.name)));
             }
         });
 
@@ -317,7 +321,7 @@ public class NeutralPlugin extends Plugin{
                 result.append("[orange] /").append(command.text).append("[white] ")
                         .append(command.paramText)
                         .append("[lightgray] - ")
-                        .append(bundle.has(command.description) ? bundle.get(command.description, locale) : command.description)
+                        .append(Bundle.has(command.description) ? Bundle.get(command.description, locale) : command.description)
                         .append("\n");
             }
             player.sendMessage(result.toString());
@@ -332,7 +336,9 @@ public class NeutralPlugin extends Plugin{
             String message = netServer.admins.filterMessage(player, args[1]);
             int range = Strings.parseInt(args[0]) * 10;
             if(message != null){
-                Groups.player.each(p -> p.dst(player.x, player.y) < range || spies.contains(p.uuid()), o -> o.sendMessage(message, player, "[#" + player.team().color.toString() + "]<L>" + NetClient.colorizeName(player.id(), player.name)));
+                Groups.player.each(p -> p.dst(player.x, player.y) < range || spies.contains(p.uuid()),
+                        o -> o.sendMessage(message, player, "[#" + player.team().color.toString() + "]<L>"
+                                + NetClient.colorizeName(player.id(), player.name)));
             }
         });
 
@@ -424,9 +430,9 @@ public class NeutralPlugin extends Plugin{
                 }
 
                 StringBuilder result = new StringBuilder();
-                result.append(bundle.format("commands.history.page", locale, mouseX, mouseY, page + 1, pages)).append("\n");
+                result.append(Bundle.format("commands.history.page", locale, mouseX, mouseY, page + 1, pages)).append("\n");
                 if(entries.isEmpty()){
-                    result.append(bundle.get("events.history.empty", locale));
+                    result.append(Bundle.get("events.history.empty", locale));
                 }
 
                 for(int i = 6 * page; i < Math.min(6 * (page + 1), entries.size); i++){
@@ -490,7 +496,7 @@ public class NeutralPlugin extends Plugin{
             }
 
             StringBuilder result = new StringBuilder();
-            result.append(bundle.format("commands.pl.page", Locale.forLanguageTag(player.locale), page + 1, pages)).append("\n");
+            result.append(Bundle.format("commands.pl.page", Locale.forLanguageTag(player.locale), page + 1, pages)).append("\n");
 
             for(int i = 6 * page; i < Math.min(6 * (page + 1), Groups.player.size()); i++){
                 Player t = Groups.player.index(i);
@@ -600,7 +606,7 @@ public class NeutralPlugin extends Plugin{
             }
 
             StringBuilder result = new StringBuilder();
-            result.append(bundle.format("commands.maps.page", Locale.forLanguageTag(player.locale), page + 1, pages)).append("\n");
+            result.append(Bundle.format("commands.maps.page", Locale.forLanguageTag(player.locale), page + 1, pages)).append("\n");
             for(int i = 6 * page; i < Math.min(6 * (page + 1), mapList.size); i++){
                 result.append("[lightgray] ").append(i + 1).append("[orange] ").append(mapList.get(i).name()).append("[white] ").append("\n");
             }
@@ -624,7 +630,7 @@ public class NeutralPlugin extends Plugin{
             }
 
             StringBuilder result = new StringBuilder();
-            result.append(bundle.format("commands.saves.page", Locale.forLanguageTag(player.locale), page + 1, pages)).append("\n");
+            result.append(Bundle.format("commands.saves.page", Locale.forLanguageTag(player.locale), page + 1, pages)).append("\n");
             for(int i = 6 * page; i < Math.min(6 * (page + 1), saves.size); i++){
                 result.append("[lightgray] ").append(i + 1).append("[orange] ").append(saves.get(i).nameWithoutExtension()).append("[white] ").append("\n");
             }
@@ -694,7 +700,7 @@ public class NeutralPlugin extends Plugin{
     }
 
     public static void bundled(Player player, String key, Object... values){
-        player.sendMessage(bundle.format(key, Locale.forLanguageTag(player.locale), values));
+        player.sendMessage(Bundle.format(key, Locale.forLanguageTag(player.locale), values));
     }
 
     public static void bundled(String key, Object... values){
