@@ -237,9 +237,7 @@ public class NeutralPlugin extends Plugin{
             Events.on(PlayerLeave.class, event -> {
                 String uuid = event.player.uuid();
                 ObjectSet<String> uuids = surrendered.get(event.player.team(), ObjectSet::new);
-                if(uuids.contains(uuid)){
-                    uuids.remove(uuid);
-                }
+                uuids.remove(uuid);
             });
 
             Events.on(GameOverEvent.class, __ -> surrendered.clear());
