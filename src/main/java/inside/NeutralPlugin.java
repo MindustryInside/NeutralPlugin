@@ -247,12 +247,14 @@ public class NeutralPlugin extends Plugin{
     @Override
     public void registerServerCommands(CommandHandler handler){
 
+        // TODO: help command for console commands with localizing
+
         handler.register("reload-config", "reload configuration", args -> {
             config = gson.fromJson(dataDirectory.child("config.json").readString(), Config.class);
             Log.info("Reloaded");
         });
 
-        handler.register("tell", Bundle.get("commands.tell.params"), Bundle.get("commands.tell.description"), args -> {
+        handler.register("tell", "<player> <text...>", "commands.tell.description", args -> {
             Player target = Groups.player.find(p -> p.name().equalsIgnoreCase(args[0]) || p.uuid().equalsIgnoreCase(args[0]));
             if(target == null){
                 Log.info(Bundle.get("commands.tell.player-not-found"));
@@ -263,12 +265,12 @@ public class NeutralPlugin extends Plugin{
             Log.info(Bundle.format("commands.tell.log", target.name(), args[1]));
         });
 
-        handler.register("despw", Bundle.get("commands.despw.description"), args -> {
+        handler.register("despw", "commands.despw.description", args -> {
             Groups.unit.each(Unit::kill);
             Log.info(Bundle.get("commands.despw.log"));
         });
 
-        handler.register("kicks", Bundle.get("commands.kicks.description"), args -> {
+        handler.register("kicks", "commands.kicks.description", args -> {
             Log.info("Kicks: @", netServer.admins.kickedIPs.isEmpty() ? "<none>" : "");
             for(Entry<String, Long> e : netServer.admins.kickedIPs){
                 PlayerInfo info = netServer.admins.findByIPs(e.key).first();
