@@ -89,14 +89,23 @@ public class NeutralPlugin extends Plugin{
         });
 
         netServer.admins.addChatFilter((target, text) -> {
-            String lower = text.toLowerCase();
-            if(current[0] != null && (lower.equals("y") || lower.equals("n"))){
+            if(current[0] != null){
                 if(current[0].voted().contains(target.uuid()) || current[0].voted().contains(netServer.admins.getInfo(target.uuid()).lastIP)){
                     bundled(target, "commands.already-voted");
                     return null;
                 }
 
-                int sign = lower.equals("y") ? 1 : -1;
+                int sign = switch(text.toLowerCase()){
+                    case "y", "yes" ->  1;
+                    case "n", "no" -> -1;
+                    default -> 0;
+                };
+
+                if(sign == 0){
+                    bundled(target, "commands.incorrect-sign");
+                    return null;
+                }
+
                 current[0].vote(target, sign);
                 return null;
             }
