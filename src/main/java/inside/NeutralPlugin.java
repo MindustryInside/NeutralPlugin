@@ -247,7 +247,16 @@ public class NeutralPlugin extends Plugin{
     @Override
     public void registerServerCommands(CommandHandler handler){
 
-        // TODO: help command for console commands with localizing
+        handler.removeCommand("help");
+
+        handler.register("help", "Displays this command list.", arg -> {
+            Log.info("Commands:");
+            for(CommandHandler.Command command : handler.getCommandList()){
+                Log.info("  &b&lb " + command.text + (command.paramText.isEmpty() ? "" : " &lc&fi") +
+                        command.paramText + "&fr - &lw" +
+                        (Bundle.has(command.description) ? Bundle.get(command.description) : command.description));
+            }
+        });
 
         handler.register("reload-config", "reload configuration", args -> {
             config = gson.fromJson(dataDirectory.child("config.json").readString(), Config.class);
@@ -292,8 +301,8 @@ public class NeutralPlugin extends Plugin{
             String message = netServer.admins.filterMessage(player, args[0]);
             if(message != null){
                 Groups.player.each(p -> p.team() == player.team() || spies.contains(p.uuid()),
-                        o -> o.sendMessage(message, player, "[#" + player.team().color + "]<T>" +
-                                NetClient.colorizeName(player.id(), player.name)));
+                        o -> o.sendMessage(message, player, "[#" + player.team().color + "]<T>"
+                                + Misc.colorizedName(player)));
             }
         });
 
@@ -338,7 +347,7 @@ public class NeutralPlugin extends Plugin{
             if(message != null){
                 Groups.player.each(p -> p.dst(player.x, player.y) < range || spies.contains(p.uuid()),
                         o -> o.sendMessage(message, player, "[#" + player.team().color.toString() + "]<L>"
-                                + NetClient.colorizeName(player.id(), player.name)));
+                                + Misc.colorizedName(player)));
             }
         });
 
@@ -378,8 +387,8 @@ public class NeutralPlugin extends Plugin{
             send.add(Tuples.of(player, target, Time.millis()));
 
             // TODO: localize this?
-            target.sendMessage(Strings.format("[lightgray][[@ --> [orange]You[lightgray]]:[white] @", NetClient.colorizeName(player.id, player.name), args[1]));
-            player.sendMessage(Strings.format("[lightgray][[[orange]You[lightgray] --> @]:[white] @", NetClient.colorizeName(target.id, target.name), args[1]));
+            target.sendMessage(Strings.format("[lightgray][[@ --> [orange]You[lightgray]]:[white] @", Misc.colorizedName(player), args[1]));
+            player.sendMessage(Strings.format("[lightgray][[[orange]You[lightgray] --> @]:[white] @", Misc.colorizedName(target), args[1]));
         });
 
         handler.<Player>register("r", "<text...>", "commands.r.description", (args, player) -> {
@@ -393,8 +402,8 @@ public class NeutralPlugin extends Plugin{
             send.add(Tuples.of(player, target, Time.millis()));
 
             // TODO: localize this?
-            target.sendMessage(Strings.format("[lightgray][[@ --> [orange]You[lightgray]]:[white] @", NetClient.colorizeName(player.id, player.name), args[0]));
-            player.sendMessage(Strings.format("[lightgray][[[orange]You[lightgray] --> @]:[white] @", NetClient.colorizeName(target.id, target.name), args[0]));
+            target.sendMessage(Strings.format("[lightgray][[@ --> [orange]You[lightgray]]:[white] @", Misc.colorizedName(player), args[0]));
+            player.sendMessage(Strings.format("[lightgray][[[orange]You[lightgray] --> @]:[white] @", Misc.colorizedName(target), args[0]));
         });
 
         handler.<Player>register("alert", "commands.alert.description", (args, player) -> {
@@ -555,6 +564,7 @@ public class NeutralPlugin extends Plugin{
         });
 
         handler.<Player>register("hub", "commands.hub.description", (args, player) -> {
+            // TODO: null check?
             Tuple2<String, Integer> ip = config.getHubIp();
             Call.connect(player.con, ip.t1, ip.t2);
         });
