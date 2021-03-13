@@ -15,10 +15,12 @@ public class Tuple3<T1, T2, T3> extends Tuple2<T1, T2>{
         this.t3 = Objects.requireNonNull(t3, "t3");
     }
 
+    @Override
     public <R> Tuple3<R, T2, T3> mapT1(Function<T1, R> mapper){
         return new Tuple3<>(mapper.apply(t1), t2, t3);
     }
 
+    @Override
     public <R> Tuple3<T1, R, T3> mapT2(Function<T2, R> mapper){
         return new Tuple3<>(t1, mapper.apply(t2), t3);
     }

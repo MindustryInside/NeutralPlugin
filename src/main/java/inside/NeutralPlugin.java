@@ -13,9 +13,8 @@ import inside.entry.*;
 import inside.struct.*;
 import inside.vote.*;
 import mindustry.content.*;
-import mindustry.core.NetClient;
-import mindustry.game.*;
 import mindustry.game.EventType.*;
+import mindustry.game.Team;
 import mindustry.gen.*;
 import mindustry.maps.Map;
 import mindustry.mod.Plugin;
@@ -332,7 +331,7 @@ public class NeutralPlugin extends Plugin{
             }
 
             StringBuilder result = new StringBuilder();
-            result.append(Strings.format("[orange]-- Commands Page[lightgray] @[gray]/[lightgray]@[orange] --\n\n", (page + 1), pages));
+            result.append(Bundle.format("commands.help.page", locale, page + 1, pages)).append("\n\n");
 
             for(int i = commandsPerPage * page; i < Math.min(commandsPerPage * (page + 1), handler.getCommandList().size); i++){
                 CommandHandler.Command command = handler.getCommandList().get(i);
@@ -578,7 +577,7 @@ public class NeutralPlugin extends Plugin{
             Call.connect(player.con, ip.t1, ip.t2);
         });
 
-        handler.<Player>register("team", "<command> [target]", "commands.admin.teamp.description", (args, player) -> {
+        handler.<Player>register("team", "<command> [target]", "commands.admin.team.description", (args, player) -> {
             if(!player.admin){
                 bundled(player, "commands.permission-denied");
                 return;
