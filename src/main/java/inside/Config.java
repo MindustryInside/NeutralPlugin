@@ -1,5 +1,6 @@
 package inside;
 
+import arc.struct.ObjectSet;
 import arc.util.Strings;
 import inside.struct.*;
 import mindustry.Vars;
@@ -7,6 +8,8 @@ import mindustry.Vars;
 import java.util.*;
 
 public class Config{
+
+    public static final ObjectSet<Locale> supportedLocales = ObjectSet.with(new Locale("ru", "RU"), new Locale("en"));
 
     /** A distance of the nuke alert. Default 30 blocks. */
     public int alertDistance = 300;
@@ -33,7 +36,7 @@ public class Config{
     public PluginType type = PluginType.def;
 
     /** Plugin locale. */
-    public Locale locale = Locale.forLanguageTag("ru");
+    public Locale locale = new Locale("en");
 
     /** Illegal names. If player has one of this names he be a kicked from server. */
     public Set<String> bannedNames = Set.of(

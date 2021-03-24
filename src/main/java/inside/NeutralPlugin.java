@@ -164,32 +164,34 @@ public class NeutralPlugin extends Plugin{
         });
 
         Events.on(TapEvent.class, event -> {
-            if(activeHistoryPlayers.contains(event.player.uuid())){
-                CacheSeq<HistoryEntry> entries = history[event.tile.x][event.tile.y];
-
-                Locale locale = Locale.forLanguageTag(event.player.locale);
-                StringBuilder message = new StringBuilder(Bundle.format("events.history.title",
-                        locale, event.tile.x, event.tile.y));
-
-                entries.cleanUp();
-                if(entries.isOverflown()){
-                    message.append(Bundle.get("events.history.overflow", locale));
-                }
-
-                int i = 0;
-                for(HistoryEntry entry : entries){
-                    message.append("\n").append(entry.getMessage(locale));
-                    if(++i > 6){
-                        break;
-                    }
-                }
-
-                if(entries.isEmpty()){
-                    message.append(Bundle.get("events.history.empty", locale));
-                }
-
-                event.player.sendMessage(message.toString());
+            if(!activeHistoryPlayers.contains(event.player.uuid())){
+                return;
             }
+
+            CacheSeq<HistoryEntry> entries = history[event.tile.x][event.tile.y];
+
+            Locale locale = Locale.forLanguageTag(event.player.locale);
+            StringBuilder message = new StringBuilder(Bundle.format("events.history.title",
+                    locale, event.tile.x, event.tile.y));
+
+            entries.cleanUp();
+            if(entries.isOverflown()){
+                message.append(Bundle.get("events.history.overflow", locale));
+            }
+
+            int i = 0;
+            for(HistoryEntry entry : entries){
+                message.append("\n").append(entry.getMessage(locale));
+                if(++i > 6){
+                    break;
+                }
+            }
+
+            if(entries.isEmpty()){
+                message.append(Bundle.get("events.history.empty", locale));
+            }
+
+            event.player.sendMessage(message.toString());
         });
 
         Events.on(PlayerLeave.class, event -> activeHistoryPlayers.remove(event.player.uuid()));
@@ -321,6 +323,7 @@ public class NeutralPlugin extends Plugin{
                 return;
             }
             Locale locale = Locale.forLanguageTag(player.locale);
+            Log.info(locale);
             int commandsPerPage = 6;
             int page = args.length > 0 ? Strings.parseInt(args[0]) : 1;
             int pages = Mathf.ceil((float)handler.getCommandList().size / commandsPerPage);
