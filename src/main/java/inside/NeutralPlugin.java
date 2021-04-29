@@ -257,39 +257,33 @@ public class NeutralPlugin extends Plugin{
     @Override
     public void registerServerCommands(CommandHandler handler){
 
-        handler.removeCommand("help");
-
-        handler.register("help", "Displays this command list.", arg -> {
-            Log.info("Commands:");
-            for(CommandHandler.Command command : handler.getCommandList()){
-                Log.info("  &b&lb " + command.text + (command.paramText.isEmpty() ? "" : " &lc&fi") +
-                        command.paramText + "&fr - &lw" +
-                        (Bundle.has(command.description) ? Bundle.get(command.description) : command.description));
+        handler.register("reload-config", "reload configuration", args -> {
+            try{
+                config = gson.fromJson(dataDirectory.child("config.json").readString(), Config.class);
+                Log.info("Reloaded");
+            }catch(Throwable t){
+                Log.err("Failed to reload configuration.");
+                Log.err(t);
             }
         });
 
-        handler.register("reload-config", "reload configuration", args -> {
-            config = gson.fromJson(dataDirectory.child("config.json").readString(), Config.class);
-            Log.info("Reloaded");
-        });
-
-        handler.register("tell", "<player> <text...>", "commands.tell.description", args -> {
+        handler.register("tell", "<player/ID> <text...>", "Tell message to player.", args -> {
             Player target = Groups.player.find(p -> p.name().equalsIgnoreCase(args[0]) || p.uuid().equalsIgnoreCase(args[0]));
             if(target == null){
-                Log.info(Bundle.get("commands.tell.player-not-found"));
+                Log.info("&lc[tell]&ly player not found!");
                 return;
             }
 
             target.sendMessage("[scarlet][[Server]:[] " + args[1]);
-            Log.info(Bundle.format("commands.tell.log", target.name(), args[1]));
+            Log.info(Bundle.format("&lc[console --> &ly@&lc] &ly@", target.name(), args[1]));
         });
 
-        handler.register("despw", "commands.despw.description", args -> {
+        handler.register("despw", "Kill all units.", args -> {
             Groups.unit.each(Unit::kill);
-            Log.info(Bundle.get("commands.despw.log"));
+            Log.info("All units were killed!");
         });
 
-        handler.register("kicks", "commands.kicks.description", args -> {
+        handler.register("kicks", "Display a list of kicked players.", args -> {
             Log.info("Kicks: @", netServer.admins.kickedIPs.isEmpty() ? "<none>" : "");
             for(Entry<String, Long> e : netServer.admins.kickedIPs){
                 PlayerInfo info = netServer.admins.findByIPs(e.key).first();
@@ -316,7 +310,6 @@ public class NeutralPlugin extends Plugin{
             }
         });
 
-        //TODO(Skat): localize this
         handler.<Player>register("help", "[page]", "commands.help.description", (args, player) -> {
             if(args.length > 0 && !Strings.canParseInt(args[0])){
                 bundled(player, "commands.page-not-int");

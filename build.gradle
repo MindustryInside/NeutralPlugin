@@ -1,26 +1,25 @@
-apply plugin: "java"
-
-sourceCompatibility = 14
-targetCompatibility = 14
+apply plugin: 'java'
 
 repositories{
     mavenCentral()
-    maven{ url 'https://www.jitpack.io' }
+    maven{url 'https://www.jitpack.io'}
 }
 
 ext{
-    mindustryVersion = "v126.1"
-    gsonVersion = '2.8.6'
+    versions = [:]
+    versions.mindustry = 'v126.2'
+    versions.gson = '2.8.6'
 }
 
 dependencies{
-    compileOnly "com.github.Anuken.Arc:arc-core:$mindustryVersion"
-    compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
+    compileOnly "com.github.Anuken.Arc:arc-core:$versions.mindustry"
+    compileOnly "com.github.Anuken.Mindustry:core:$versions.mindustry"
 
-    implementation "com.google.code.gson:gson:$gsonVersion"
+    implementation "com.google.code.gson:gson:$versions.gson"
 }
 
 jar{
-    archiveFileName = "${project.archivesBaseName}.jar"
-    from{configurations.runtimeClasspath.collect{it.isDirectory() ? it : zipTree(it)}}
+    from{
+        configurations.runtimeClasspath.collect{it.isDirectory() ? it : zipTree(it)}
+    }
 }
