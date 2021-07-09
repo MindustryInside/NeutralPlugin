@@ -7,7 +7,7 @@ repositories{
 
 ext{
     versions = [:]
-    versions.mindustry = 'v126.2'
+    versions.mindustry = 'v127'
     versions.gson = '2.8.6'
 }
 

@@ -331,10 +331,11 @@ public class NeutralPlugin extends Plugin{
 
             for(int i = commandsPerPage * page; i < Math.min(commandsPerPage * (page + 1), handler.getCommandList().size); i++){
                 CommandHandler.Command command = handler.getCommandList().get(i);
+                String description = !Objects.isNull(command.description) ? command.description : "";
                 result.append("[orange] /").append(command.text).append("[white] ")
                         .append(command.paramText)
                         .append("[lightgray] - ")
-                        .append(Bundle.has(command.description) ? Bundle.get(command.description, locale) : command.description)
+                        .append(Bundle.has(description) ? Bundle.get(description, locale) : description)
                         .append("\n");
             }
             player.sendMessage(result.toString());
