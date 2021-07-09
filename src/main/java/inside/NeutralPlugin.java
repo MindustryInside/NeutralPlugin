@@ -297,18 +297,7 @@ public class NeutralPlugin extends Plugin{
     @Override
     public void registerClientCommands(CommandHandler handler){
 
-        handler.removeCommand("t");
-
         handler.removeCommand("help");
-
-        handler.<Player>register("t", "<text...>", "commands.t.description", (args, player) -> {
-            String message = netServer.admins.filterMessage(player, args[0]);
-            if(message != null){
-                Groups.player.each(p -> p.team() == player.team() || spies.contains(p.uuid()),
-                        o -> o.sendMessage(message, player, "[#" + player.team().color + "]<T>"
-                                + Misc.colorizedName(player)));
-            }
-        });
 
         handler.<Player>register("help", "[page]", "commands.help.description", (args, player) -> {
             if(args.length > 0 && !Strings.canParseInt(args[0])){
